@@ -28,9 +28,9 @@ be checked:
 
 **Confirmations:**
 
-- Each prompt was sent in a **fresh chat**: yes / no
-- No follow-up questions were asked before Part 7: yes / no
-- Every output was saved **before** any editing: yes / no
+- Each prompt was sent in a **fresh chat**: yes
+- No follow-up questions were asked before Part 7: yes
+- Every output was saved **before** any editing: yes
 
 ---
 
@@ -39,25 +39,30 @@ be checked:
 **Prompt sent** (should be exactly one sentence):
 
 ```
-
+Write Python code to analyze student marks.
 ```
 
 **Assumptions the AI made that I never gave it** — list them, one per line. A data format, a pass
 threshold, a rounding rule, an input method, an invented feature all count.
 
-1.
-2.
-3.
+1. Gave code with ready sample data, so for the input I should edit code
+2. Created grading policy and applied letter format for each
+3. Added feature that student can have multiple grades, cause there are multiple subjects that you can add or edit
+4. Gave threshold for pass as (>=50)
+5. Outputs and data are numbers which is correct, but it not only gives class stats, but also individual marks for subjects and performance as who is the best and who needs help.
 
 **Questions it should have asked and did not:**
 
-1.
-2.
+1. What type of input and output you expect?
+2. What is the threshold for passing?
+3. Do you need letter format grading policy?
 
 **Is the function named `analyze_marks` with the required signature?** yes / no — if no, what is it
-called:
+called:  
+There is no function 'analyze_marks', instead it just imports statistic tools from built in library
 
-**First impression before testing** (one sentence — you will compare this with section 6 later):
+**First impression before testing** (one sentence — you will compare this with section 6 later):  
+Not suitable for testing because I have to manualy edit my code to input new data, but analyzes marks from sample, so it works
 
 ---
 
@@ -66,18 +71,22 @@ called:
 **Prompt sent** (paste it in full, including any substitutions):
 
 ```
-
+You are a Python developer. Implement analyze_marks(marks, pass_mark=50). Return
+average, highest, lowest, and pass_rate in a dictionary. Accept marks from 0 to 100;
+raise ValueError for an empty list, non-numeric values, or out-of-range values. Use
+no external libraries. Return code plus a short explanation.
 ```
 
 **What B fixed compared to A:**
 
-1.
-2.
+1. I have only one array for marks as intended, not extra array for each subject
+2. Validation for marks that are out of range or are not valid type
+3. Output clean and shows only class stats
 
 **What B still leaves open:**
 
-1.
-2.
+1. For the input I still have to edit the code
+2. If there is invalid mark in set it automatically shuts down whole code
 
 ---
 
