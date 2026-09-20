@@ -86,7 +86,7 @@ no external libraries. Return code plus a short explanation.
 **What B still leaves open:**
 
 1. For the input I still have to edit the code
-2. If there is invalid mark in set it automatically shuts down whole code
+2. Thus not enough test cases to check
 
 ---
 
@@ -95,25 +95,35 @@ no external libraries. Return code plus a short explanation.
 **What I appended to Prompt B:**
 
 ```
-
+Example: analyze_marks([40, 60, 80], 50) → average 60, highest 80, lowest 40,
+pass_rate 66.67. Include tests for: one mark, decimals, custom pass_mark, empty list,
+text value, and marks below 0 or above 100. State any remaining assumptions before
+the code.
 ```
 
 **Tests the AI wrote for itself** — how many, and which situations do they cover?
 
 | Situation | Covered by the AI's tests? |
 | --- | --- |
-| one mark | |
-| decimals | |
-| custom pass_mark | |
-| empty list | |
-| text value | |
-| below 0 / above 100 | |
+| one mark | Yes|
+| decimals | Yes|
+| custom pass_mark | Yes|
+| empty list | Yes|
+| text value | Yes|
+| below 0 / above 100 | Yes|
 
-**Do the AI's own tests pass against the AI's own code?** yes / no
+**Do the AI's own tests pass against the AI's own code?** yes
 
 **Do they agree with the harness in section 6?** yes / no — if no, where do they disagree:
 
-**Assumptions C stated explicitly before the code:**
+**Assumptions C stated explicitly before the code:**  
+Assumptions
+
+pass_rate is a percentage (0-100), and average and pass_rate are rounded to 2 decimals.
+A mark equal to pass_mark counts as a pass (>=).
+True/False are rejected as non-numeric, even though Python treats them as ints. NaN and infinity are also rejected.
+pass_mark is validated the same way as the marks (a number from 0 to 100), and an invalid one raises ValueError.
+marks can be any list, tuple or generator of numbers. A plain string is not treated as a list of marks and raises ValueError.
 
 ---
 
@@ -122,16 +132,22 @@ no external libraries. Return code plus a short explanation.
 **The complete prompt I wrote** (one message, sent to a fresh chat):
 
 ```
-
+You are a Python developer. Implement analyze_marks(marks, pass_mark=50). Return
+"average", "highest", "lowest", and "pass_rate" in a dictionary. Accept marks from 0 to 100;
+raise ValueError for an empty list, non-numeric values, or out-of-range values. Use
+no external libraries. Return code plus a short explanation. pass_rate is a percentage (0-100), and average and pass_rate are rounded to 2 decimals, if .00 just drop it. A mark equal to pass_mark counts as a pass (>=). True/False, NaN and infinity are rejected. pass_mark is validated the same way as the marks (a number from 0 to 100), and an invalid one raises ValueError. marks can be any list, tuple or generator of numbers. A plain string is not treated as a list of marks and raises ValueError.
+Example: analyze_marks([40, 60, 80], 50) → average 60, highest 80, lowest 40,
+pass_rate 66.67. Include tests for: one mark, decimals, custom pass_mark, empty list, text value, and marks below 0 or above 100.
 ```
 
 **What I deliberately added that A, B and C did not have:**
 
-1.
-2.
-3.
+1. True/False, NaN and infinity are rejected
+2. pass_mark is validated the same way as the marks (a number from 0 to 100), and an invalid one raises ValueError
+3. pass_rate is a percentage (0-100), and average and pass_rate are rounded to 2 decimals, if .00 just drop it
 
-**The ambiguity I found in the specification, and how I resolved it inside Prompt D:**
+**The ambiguity I found in the specification, and how I resolved it inside Prompt D:**  
+Assumptions that AI made from prompt C were correct way to specify output and validation so I just added that assumptions to prompt
 
 ---
 
