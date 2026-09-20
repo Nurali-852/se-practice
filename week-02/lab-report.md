@@ -1,8 +1,8 @@
 # Lab report — Practice #02: The Prompt Is an Engineering Input
 
-**Name:**
-**Group:**
-**Date:**
+**Name:** Nurali Myrzaly
+**Group:** Monday 16:00-19:00
+**Date:** 20.09.2026
 
 > Fill in every section. **Do not delete or renumber the headings** — the grading pass reads them
 > by number. If something did not happen, write "did not happen" and why; an empty section and a
@@ -14,10 +14,10 @@
 
 | | |
 | --- | --- |
-| AI assistant | |
-| Exact model name | |
-| Implementation language | |
-| Date of the runs | |
+| AI assistant | Claude|
+| Exact model name | Sonnet 5|
+| Implementation language | Python|
+| Date of the runs | 20.09.2026|
 
 **Non-Python students only** — paste your substituted Prompt B text here, so the substitution can
 be checked:
