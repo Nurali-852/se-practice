@@ -11,63 +11,71 @@ three happy paths.
 These must settle the two questions the scenario leaves open. Either answer is accepted; no answer
 is not.
 
-- **Overlap:** a booking that ends exactly when another begins is TODO (allowed / not allowed) under R3, because TODO.
-- **Duration:** a booking of exactly two hours is TODO (allowed / not allowed) under R2, because TODO.
-- TODO (any further assumption you needed)
+- **Overlap:** a booking that ends exactly when another begins is allowed under R3, because we see it as [start, end) structure
+- **Duration:** a booking of exactly two hours is allowed under R2, because we can count it thanks to declared structure but no more time allowed.
+- Cancellation is restricted to the booking's owner (no admin override covered here)
 
 ---
 
-## US-TODO — <story title>
+## US-01 —  View Availability
 
 ### AC-01
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** I am a logged-in student
+- **When** I open the room availability schedule
+- **Then** I see all rooms with their booked and free time slots for the selected date
 
 ### AC-02
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** a room has been marked as blocked by an admin
+- **When** I view the availability schedule
+- **Then** that room appears as unavailable for the blocked period and cannot be selected for booking
 
 ### AC-03
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** no rooms have any bookings or blocks for the selected date
+- **When** I view the availability schedule
+- **Then** all rooms display as fully free for that date
 
 ---
 
-## US-TODO — <story title>
+## US-02 — Book Room
 
 ### AC-04
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** a room is free for a future time slot of two hours or less
+- **When** I submit a booking request for that room and time slot
+- **Then** the booking is created and the room shows as reserved for that period
 
 ### AC-05
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** I select a start time that is earlier than the current date/time
+- **When** I submit the booking request
+- **Then** the system rejects the booking and displays an error stating bookings must be in the future
 
 ### AC-06
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
-
----
-
-## US-TODO — <story title>
+- **Given** I select a start and end time spanning more than two hours
+- **When** I submit the booking request
+- **Then** the system rejects the booking and displays an error stating the maximum duration is two hours
 
 ### AC-07
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** the selected room already has a booking that overlaps my requested time slot
+- **When** I submit the booking request
+- **Then** the system rejects the booking and displays an error indicating the room is already booked for that period
 
 ### AC-08
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** the selected room is marked as blocked for the requested time slot
+- **When** I submit the booking request
+- **Then** the system rejects the booking and displays an error indicating the room is unavailable
+
+## US-03 — Cancel Booking
 
 ### AC-09
-- **Given** TODO
-- **When** TODO
-- **Then** TODO
+- **Given** I have an existing future booking
+- **When** I choose to cancel that booking
+- **Then** the booking is removed and the room becomes free for that time slot
+
+### AC-10
+- **Given** a booking exists that was made by a different student
+- **When** I attempt to cancel that booking
+- **Then** the system rejects the action and displays an error stating I can only cancel my own bookings
+
+### AC-11
+- **Given** a booking has already been cancelled or has passed
+- **When** I attempt to cancel it again
+- **Then** the system displays an error indicating the booking cannot be found or is no longer active
