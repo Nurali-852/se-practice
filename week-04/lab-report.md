@@ -10,13 +10,13 @@
 
 | Field | Value |
 | --- | --- |
-| Name | <your name> |
-| Group | <your group> |
-| AI assistant | <e.g. Claude, ChatGPT, Gemini, DeepSeek, Grok> |
-| Exact model | <the exact model name with its version, e.g. claude-sonnet-4-5> |
-| Renderer | <PlantUML web server / VS Code extension / IntelliJ plugin / local jar> |
+| Name | Nurali |
+| Group | Monday 16:00|
+| AI assistant | Claude|
+| Exact model | Sonnet 5.5|
+| Renderer | PlantUML web server|
 | Behaviour diagram | <sequence / activity / both> |
-| Stories used | <my week-03 stories, revised / the reference set from README §3> |
+| Stories used | the reference set from README §3|
 
 ---
 
@@ -28,7 +28,7 @@ AI's first replies are saved as files in `models/original/` — do not paste the
 ### 2.1 Task 1 — use-case prompt
 
 ```text
-<paste>
+Using the supplied scenario and approved stories, generate PlantUML for a use-case diagram. Include Student and Administrator outside a named system boundary. Model their goals, show justified associations, and list assumptions. Use include or extend only with a clear reason.
 ```
 
 ### 2.2 Task 2 — class prompt
@@ -59,15 +59,22 @@ AI's first replies are saved as files in `models/original/` — do not paste the
 
 ## 3. Task 1 — use-case review
 
-**Assumptions the AI listed:** <one line each, or "the AI listed none" — that is a finding too>
+**Assumptions the AI listed:**  
+1. Only the two actors named in the scenario exist. No external systems (e.g., a notification service) appear, since other notifications are out of scope.
+2. The administrator is not a specialization of the student. The stories give administrators no booking, viewing, or cancelling goals, so there is no actor generalization and no Administrator association to the student use cases.
+3. Issue Booking Confirmation is triggered by the system as part of a successful booking, so it has no actor association of its own. The student receives the result through Book Study Room.
+4. Cancel Own Booking is restricted to the student’s own bookings (US-03). That ownership check is a precondition, not a separate use case. Cancelling frees the slot, which relates to R2 only through overlap.
+5. Block Room and Unblock Room are separate use cases because US-04 and US-05 are separate stories with opposite goals.
+6. Review Room Usage covers only viewing usage. The stories define no report content or export, so none is shown.
+7. Out-of-scope items (payments, equipment, recurring bookings, waiting lists, other notifications, registration) are not modeled. Users are assumed to exist already.
 
 At least **two** findings. A finding names the element, the problem and the rule or story that
 proves it is a problem.
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <e.g. Student → Send confirmation> | <what is wrong> | <R4 / US-01 / scenario sentence> | <what you changed> |
-| 2 | <element> | <problem> | <rule or story> | <fix> |
+| 1 | Student → Send confirmation| It is triggered automatically only for booking. But it can also be applied for blocking or unblocking | US-01, R4 | Nothing as we rely on US's it clearly states confirmation only for US-01|
+| 2 | All elements | Agent give short names for actions by itself | all | No need to fix, because names fit|
 
 ---
 
