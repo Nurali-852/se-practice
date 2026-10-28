@@ -1,4 +1,4 @@
-@startuml
+@startuml Activity
 |Student|
 start
 :Choose room, start time and duration;

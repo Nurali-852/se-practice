@@ -46,13 +46,13 @@ Generate a UML activity diagram in PlantUML for Book room. Show the initial node
 ### 2.4 Focused correction prompts (if you sent any)
 
 ```text
-<paste, or write "none">
+none
 ```
 
 ### 2.5 Critique prompt
 
 ```text
-<paste>
+Compare my diagrams with the requirements. Identify missing rules, inconsistent names, and unjustified elements. Cite each issue and propose a specific correction.
 ```
 
 ---
@@ -128,7 +128,7 @@ different outcomes, which an activity diagram shows directly with guarded branch
 | 1 | Mapping table: "Create booking, issue confirmation" | Cited as R4, but the rules are only R1–R3 | US-01 | Cite US-01 only |
 | 2 | Swimlanes Student/System and "Receive confirmation/rejection" actions | Extra structure not asked for; the lane switches clutter the flow and add student actions that aren't part of the workflow | US-01 | Remove swimlanes; one flow with "Show confirmation" / "Show rejection: <reason>" |
 | 3 | "Choose room…" + "Submit booking request" | Two actions for one step | US-01 | Merge into one "Student submits booking request" |
-| 4 | Guards `[valid]/[invalid]` and `[no]/[yes]` | Inconsistent; `[yes]` doesn't say what happened | R1, R3, R2 | Descriptive guards: `[valid]/[invalid]`, `[not blocked]/[blocked]`, `[no overlap]/[overlap]` |
+| 4 | Guards [valid]/[invalid] and [no]/[yes] | Inconsistent; [yes] doesn't say what happened | R1, R3, R2 | Descriptive guards: [valid]/[invalid], [not blocked]/[blocked], [no overlap]/[overlap] |
 | 5 | Decisions R1 / R3 / R2 and the four final nodes | Correct: one diamond per rule, every failure path ends with its own rejection reason, booking is created only after the last check | R1, R3, R2, US-01 | Kept as is |
 ---
 
@@ -139,9 +139,12 @@ critique is another claim to evaluate, not a verdict: reject what is wrong and s
 
 | # | Issue the AI raised | Element it cited | Verdict | Why |
 | --- | --- | --- | --- | --- |
-| 1 | <issue> | <element> | <accept / reject> | <your reason> |
-| 2 | <issue> | <element> | <accept / reject> | <your reason> |
-| 3 | <issue> | <element> | <accept / reject> | <your reason> |
+| 1 | Decision nodes carry no rule IDs, so R1–R4 can't be traced in the flow | behaviour.puml:4,5,6,8 | accept | Checked the file: the decisions are unlabelled. Prefixing R1 –, R3 –, R2 – and R4: costs nothing and matches the "one decision per rule" check. |
+| 2 | R1 uses <= 120 min in the class diagram and <= 2 h in the activity diagram | class.puml:28, behaviour.puml:4 | accept | Checked both files: the units really differ. Both now say 0 < duration <= 2 h, as in the rule. |
+| 3 | Issue Booking Confirmation is a separate use case with no story or actor goal | use-case.puml:10,26 | accept | R4 belongs to US-01 and the confirmation is not an actor goal. Merged into Book Study Room, <<include>> removed. |
+| 4 | Add rule tags to the use case labels, e.g. Cancel Own Booking (US-03; R2) | use-case.puml:12-14 | reject | A use case diagram shows actor goals, not rules. Traceability is the job of the §7 table, and tags in labels clutter the diagram. |
+| 5 | Add a note for R4 and operations confirm(), cancel(), block(), unblock() to the classes | class.puml:12-37 | reject | Classes are domain concepts with only the attributes R1–R3 need. The confirmation is not stored, and status and blocked already show the effect of US-03–05. Operations bring back the over-design removed in Task 2. |
+| 6 | Add activity diagrams for cancel and block/unblock | behaviour.puml | reject | The task asks for one behaviour diagram. I chose 3B "Book room" (US-01). |
 
 ---
 
@@ -152,12 +155,17 @@ diagram**, spelled exactly as in the diagram, with the story ID it traces to.
 
 | Requirement / story | Use case | Classes | Behaviour element |
 | --- | --- | --- | --- |
-| R1 | <use case> | <classes and attributes> | <message, guard or decision> |
-| R2 | <use case> | <classes, note> | <message, guard or decision> |
-| R3 | <use case> | <classes and attributes> | <message, guard or decision> |
-| R4 | <use case> | <classes> | <message or action> |
-| <US-01> | <Book room> | <Student, Booking, Room> | <message or action> |
-
+| R1 | Book Study Room\n(US-01; R1, R2, R3) | Booking (startTime, duration), note R1 | decision "R1 - Time range valid?" |
+| R2 | Book Study Room\n(US-01; R1, R2, R3) | Booking, Room, note R2 (only ACTIVE bookings count) | decision "R2 - Overlaps an ACTIVE booking?" |
+| R3 | Book Study Room\n(US-01; R1, R2, R3) | Room (blocked) | decision "R3 - Room blocked?" |
+| R4 | Issue Booking Confirmation\n(US-01; R4) | none (confirmation is not stored) | action "R4: Produce booking confirmation" |
+| US-01 | Book Study Room\n(US-01; R1, R2, R3) | Student, Booking, Room | whole activity diagram |
+| US-01 | Issue Booking Confirmation\n(US-01; R4) | none (confirmation is not stored) | action "R4: Produce booking confirmation" |
+| US-02 | View Room Availability\n(US-02) | Room, Booking | not modelled |
+| US-03 | Cancel Own Booking\n(US-03) | Student, Booking (status = CANCELLED) | not modelled; effect seen in the R2 decision |
+| US-04 | Block Room\n(US-04) | Room (blocked = true) | not modelled; effect seen in the R3 decision |
+| US-05 | Unblock Room\n(US-05) | Room (blocked = false) | not modelled; effect seen in the R3 decision |
+| US-06 | Review Room Usage\n(US-06) | Room, Booking | not modelled |
 ---
 
 ## 8. Change log
@@ -167,9 +175,9 @@ behaviour diagram). "Before" is what the AI produced; "After" is what you submit
 
 | # | Diagram | Before (AI's original) | After (your revision) | Reason |
 | --- | --- | --- | --- | --- |
-| 1 | <use case> | <before> | <after> | <rule, story or notation reason> |
-| 2 | <class> | <before> | <after> | <reason> |
-| 3 | <sequence / activity> | <before> | <after> | <reason> |
+| 1 | use case | Use case labels without story IDs | Labels with story ID and rules, e.g. Book Study Room with US-01 and R1, R2, R3 | Every use case traces to an approved story |
+| 2 | class | Class BookingConfirmation and operations on Student | Both removed | Classes are domain concepts with only the attributes R1-R3 need; R4 is a behaviour step, not stored data |
+| 3 | activity | Swimlanes Student/System, Receive confirmation/rejection actions, guards yes/no | One flow, Show confirmation or rejection with a reason, descriptive guards, rule IDs in the decisions | One labelled decision per rule (R1, R3, R2); confirmation (R4) on success and a rejection on every failure path |
 
 ---
 
@@ -179,17 +187,52 @@ Paste the complete output of `python tests/check_models.py`, then explain **ever
 keeping**. The same IDs go in `submission.yml` under `checker.kept_fails`. A FAIL you report and explain costs you nothing. One you hide costs the whole criterion.
 
 ```text
-<paste the full output>
+Week 04 structural check - shape only, never quality
+
+UC1  PASS  Student and Administrator declared
+UC2  PASS  named system boundary: "Smart Campus Study Room Booking"
+UC3  PASS  all actors declared outside the boundary
+UC4  PASS  all scenario goals present (7 use cases)
+UC5  PASS  no actor is associated with a confirmation use case
+UC6  PASS  actor responsibilities match the scenario
+UC7  PASS  use cases are goals, not screens or components
+UC8  PASS  every include / extend / generalization carries a ' why: comment (or there are none)
+UC9  PASS  revised diagram differs from the AI's original
+CL1  PASS  Student, Room and Booking present
+CL2  PASS  Booking is associated with Student and with Room
+CL3  PASS  every association has multiplicities at both ends
+CL4  PASS  1 student / 1 room per booking, 0..* bookings per student and per room
+CL5  PASS  every inheritance / composition / aggregation carries a ' why: comment (or there are none)
+CL6  PASS  only domain concepts in the class diagram
+CL7  PASS  attributes needed by R1-R3 are present
+CL8  PASS  a note states R2 (no overlapping active bookings)
+AC1  PASS  initial and final nodes present
+AC2  PASS  separate decisions check R1, R3 and R2 (3 decisions)
+AC3  PASS  every branch has a labelled guard
+AC4  PASS  no parallel paths
+AC5  PASS  confirmation on success, rejection on failure
+AC6  PASS  creation comes after all rule checks
+FI1  PASS  the AI's original output is kept for every diagram
+FI2  PASS  a rendered image for every diagram
+LR1  PASS  §1 setup filled (tool and model recorded)
+LR2  PASS  5 prompts pasted in §2
+LR3  PASS  2 use-case findings in §3
+LR4  PASS  §4 relationships read both ways, 6 assumption(s) declared
+LR5  PASS  4 behaviour-diagram findings in §5
+LR6  PASS  5 critique issues with a verdict
+LR7  PASS  3 change-log rows covering all three diagrams
+CS1  PASS  6 approved stories
+CS2  PASS  §7 traces R1-R4 into the diagrams
+CS3  PASS  every use case traces to an approved story
+
+SUMMARY pass=35 fail=0 error=0
+A FAIL you report and explain in lab-report.md §9 costs you nothing. One you hide costs the criterion.
 ```
 
-**FAILs I am keeping, and why:** <one line per check ID, or "none">
+**FAILs I am keeping, and why:** none
 
 ---
 
 ## 10. Conclusion (120–180 words)
 
-<Which diagram did the AI get most wrong, and what exactly was wrong? Which error would have
-reached the code if nobody had reviewed it? What did the critique find that you missed — and what
-did it claim that was false? Be specific: "the AI got the multiplicities wrong" is worth nothing;
-"the AI put 1..* on the Booking end, which says every room must already have a booking" is worth
-everything.>
+The AI got the class diagram most wrong. It added a BookingConfirmation class and put operations on Student, although the assignment says classes are domain concepts with only the attributes R1–R3 need. R4 is a step in the flow, not stored data, so that class would have become a useless table in the code. The same idea showed up in the use case diagram, where "Issue Booking Confirmation" was a separate use case with no actor goal. The critique found what I missed: R1 said <= 120 minutes in the class diagram but <= 2 h in the activity diagram, and the decisions had no rule IDs. A mismatch like that would have gone into validation unnoticed. It was wrong about adding cancel() and block() operations and rule tags on use case labels, because that just clutters the diagrams and traceability is what the §7 table is for. The Admin alias thing was pointless too. So AI is fine for a first draft but it doesnt read the assignment rules, you have to check it.

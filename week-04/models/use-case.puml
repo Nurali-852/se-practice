@@ -1,4 +1,4 @@
-@startuml
+@startuml Use-case
 left to right direction
 skinparam packageStyle rectangle
 
@@ -23,5 +23,6 @@ Admin --> UC_Block
 Admin --> UC_Unblock
 Admin --> UC_Usage
 
+' why: Because confirmation triggers automatically after user successfuly makes booking
 UC_Book .> UC_Confirm : <<include>>
 @enduml
