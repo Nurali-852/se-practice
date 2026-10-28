@@ -34,7 +34,7 @@ Using the supplied scenario and approved stories, generate PlantUML for a use-ca
 ### 2.2 Task 2 — class prompt
 
 ```text
-<paste>
+Create a UML domain class diagram in PlantUML for Smart Campus. Start with Student, Room, and Booking. Add attributes, appropriate operations, and association multiplicities. Add other classes only when requirements justify them. Explain each relationship and list assumptions. Avoid unjustified inheritance or composition.
 ```
 
 ### 2.3 Task 3 — behaviour prompt (3A sequence or 3B activity)
@@ -86,25 +86,34 @@ One row per association in your **revised** class diagram.
 
 | Association | Read left → right | Read right → left | Multiplicities |
 | --- | --- | --- | --- |
-| <Student — Booking> | <one student makes 0..* bookings> | <each booking belongs to exactly 1 student> | <1 / 0..*> |
-| <Room — Booking> | <...> | <...> | <...> |
+|Student — Booking | one student makes 0..* bookings | <each booking belongs to exactly 1 student| 1 / 0..* |
+| Room — Booking | One room is reserved by 0..* bookings | Each booking reserves exactly 1 room | 1 / 0..* |
 
 ### 4.2 Constraints the multiplicities cannot show
 
-- R2: <how your diagram states it — which note, on which class>
-- <any other rule that is not visible in multiplicities>
+- R2: the note is attached to Room (the constraint is about the bookings of one room). It says that among the Active bookings of the same room, the intervals [startTime, endTime) must not overlap. Multiplicities only say “a room has 0..* bookings” and can’t say anything about time.
+- R1 (future start, ≤120 min) and R3 (blocked room) are also given as notes or as the blocked attribute.
 
 ### 4.3 Assumptions
 
-- A1: <an assumption you had to make — e.g. what happens to existing bookings when a room is blocked>
-- <A2 ...>
+- A1: A1: When a room is blocked (R3), already existing Active bookings are not touched. Blocking only rejects new bookings.
+- A2: A cancelled booking is kept with status Cancelled and no longer counts for R2, so the slot becomes free.
+- A3: Duration is stored in minutes, so the R1 limit of 2 hours = 120. end Time is derived (start Time + duration Minutes), not stored.
+- A4: Students and rooms already exist (no registration). A rejected booking creates no Booking object, so there is no Failed status.
+- A5: Administrator is an actor, not a class: no data of its own, and its actions (block/unblock) just change Room.blocked.
+- A6: US-06 (usage review) is computed from Booking records, so there is no Report class.
 
 ### 4.4 Findings
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <element> | <problem> | <rule or story> | <fix> |
-
+|1 | BookingConfirmation class (1–1 with Booking) | It is an outcome of a successful booking, not a domain concept with its own state. Its attributes aren't needed by R1–R3, and it is always 1–1, so it adds nothing. | R4 (confirmation), assignment: "classes are domain concepts" | Removed the class. Confirmation is shown to the student when a Booking is created.|
+|2 | Operations on Student (book, cancel) | These are actions/use cases, not domain state. They also duplicate Booking.cancel(). | US-01, US-03 | Removed all operations. Ownership is expressed by the Student 1 - 0..* Booking association.|
+| 3 | Room.isFreeAt() and Room.canAcceptBooking() | Two overlapping operations doing almost the same thing; they are logic, not structure. | US-02, R2, R3 | Removed. The rules are documented in the R2/R3 notes.|
+|4 | ID and name attributes (studentId, roomId, bookingId, name) | Not needed for R1–R3. The assignment says attributes only for the state the rules need. | R1–R3 | Removed. Kept startTime, durationMinutes, status, blocked.|
+|5 | R2 note on Booking | R2 is about bookings of the same room, so a note on a single Booking states it at the wrong level. | R2 | Moved the R2 note to Room.|
+|6 | Booking --> BookingStatus arrow | Status is already an attribute of Booking, so the arrow duplicates it and looks like a real association. | R2, US-03 | Removed the arrow; the enum is used only as the attribute type.|
+7 | + /endTime and overlaps() on Booking | Public visibility on a derived attribute is odd, and overlaps() is behaviour that is already covered by the R2 note. | R2 | Kept /endTime as a derived attribute, removed the operation.|
 ---
 
 ## 5. Task 3 — behaviour diagram review

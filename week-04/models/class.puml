@@ -1,0 +1,38 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+
+enum BookingStatus {
+  ACTIVE
+  CANCELLED
+}
+
+class Student
+
+class Room {
+  - blocked : Boolean
+}
+
+class Booking {
+  - startTime : DateTime
+  - durationMinutes : Integer
+  - status : BookingStatus
+  /endTime : DateTime
+}
+
+Student "1" -- "0..*" Booking : makes >
+Room "1" -- "0..*" Booking : is reserved by >
+
+note right of Booking
+  R1: startTime is in the future,
+  0 < durationMinutes <= 120
+end note
+
+note bottom of Room
+  R2: among the ACTIVE bookings of one Room,
+  no two time intervals
+  [startTime, endTime) may overlap.
+  R3: if blocked = true, the Room
+  accepts no new bookings.
+end note
+@enduml

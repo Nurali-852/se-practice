@@ -1,0 +1,59 @@
+@startuml
+hide empty members
+skinparam classAttributeIconSize 0
+
+enum BookingStatus {
+  ACTIVE
+  CANCELLED
+}
+
+class Student {
+  - studentId : String
+  - name : String
+  + book(room : Room, start : DateTime, duration : Integer) : Booking
+  + cancel(booking : Booking) : void
+}
+
+class Room {
+  - roomId : String
+  - name : String
+  - blocked : Boolean
+  + block() : void
+  + unblock() : void
+  + isFreeAt(start : DateTime, duration : Integer) : Boolean
+  + canAcceptBooking(start : DateTime, duration : Integer) : Boolean
+}
+
+class Booking {
+  - bookingId : String
+  - startTime : DateTime
+  - durationMinutes : Integer
+  - status : BookingStatus
+  + /endTime : DateTime
+  + overlaps(other : Booking) : Boolean
+  + isActive() : Boolean
+  + cancel() : void
+}
+
+class BookingConfirmation {
+  - confirmationId : String
+  - issuedAt : DateTime
+}
+
+Student "1" -- "0..*" Booking : makes >
+Room "1" -- "0..*" Booking : is reserved by >
+Booking "1" -- "1" BookingConfirmation : is confirmed by >
+Booking --> BookingStatus
+
+note right of Booking
+  R1: startTime in the future,
+  0 < durationMinutes <= 120
+  R2: no overlap among ACTIVE
+  bookings of the same Room
+end note
+
+note right of Room
+  R3: blocked room rejects
+  new bookings
+end note
+@enduml
