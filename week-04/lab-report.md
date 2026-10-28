@@ -15,7 +15,7 @@
 | AI assistant | Claude|
 | Exact model | Sonnet 5.5|
 | Renderer | PlantUML web server|
-| Behaviour diagram | <sequence / activity / both> |
+| Behaviour diagram | activity |
 | Stories used | the reference set from README §3|
 
 ---
@@ -40,7 +40,7 @@ Create a UML domain class diagram in PlantUML for Smart Campus. Start with Stude
 ### 2.3 Task 3 — behaviour prompt (3A sequence or 3B activity)
 
 ```text
-<paste>
+Generate a UML activity diagram in PlantUML for Book room. Show the initial node, actions, guarded decisions, and final nodes. Check the time range, blocked-room status, and overlapping bookings. Show confirmation after success and rejection after failure. Use branches rather than parallel paths unless concurrency is required.
 ```
 
 ### 2.4 Focused correction prompts (if you sent any)
@@ -118,15 +118,18 @@ One row per association in your **revised** class diagram.
 
 ## 5. Task 3 — behaviour diagram review
 
-**Option chosen and why:** <3A sequence / 3B activity — one sentence on why>
+**Option chosen and why:** 3B activity — the task is a sequence of rule checks with
+different outcomes, which an activity diagram shows directly with guarded branches.
 
-**Design components added beyond the domain model:** <name each one, e.g. `BookingService` —
-what it does in one line; write "none" for an activity diagram>
+**Design components added beyond the domain model:** none
 
 | # | Element | Problem | Rule or story | Fix |
 | --- | --- | --- | --- | --- |
-| 1 | <element> | <problem> | <rule or story> | <fix> |
-
+| 1 | Mapping table: "Create booking, issue confirmation" | Cited as R4, but the rules are only R1–R3 | US-01 | Cite US-01 only |
+| 2 | Swimlanes Student/System and "Receive confirmation/rejection" actions | Extra structure not asked for; the lane switches clutter the flow and add student actions that aren't part of the workflow | US-01 | Remove swimlanes; one flow with "Show confirmation" / "Show rejection: <reason>" |
+| 3 | "Choose room…" + "Submit booking request" | Two actions for one step | US-01 | Merge into one "Student submits booking request" |
+| 4 | Guards `[valid]/[invalid]` and `[no]/[yes]` | Inconsistent; `[yes]` doesn't say what happened | R1, R3, R2 | Descriptive guards: `[valid]/[invalid]`, `[not blocked]/[blocked]`, `[no overlap]/[overlap]` |
+| 5 | Decisions R1 / R3 / R2 and the four final nodes | Correct: one diamond per rule, every failure path ends with its own rejection reason, booking is created only after the last check | R1, R3, R2, US-01 | Kept as is |
 ---
 
 ## 6. AI critique

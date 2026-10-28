@@ -1,0 +1,36 @@
+@startuml
+|Student|
+start
+:Choose room, start time and duration;
+:Submit booking request;
+
+|System|
+if (Start is in the future AND\n0 < duration <= 2 hours?) then ([valid])
+  if (Room is blocked?) then ([no])
+    if (Overlaps an ACTIVE booking\nfor the same room?) then ([no])
+      :Create booking with status ACTIVE;
+      :Issue booking confirmation;
+      |Student|
+      :Receive confirmation;
+      stop
+    else ([yes])
+      |System|
+      :Reject: slot already booked;
+      |Student|
+      :Receive rejection;
+      stop
+    endif
+  else ([yes])
+    |System|
+    :Reject: room is blocked;
+    |Student|
+    :Receive rejection;
+    stop
+  endif
+else ([invalid])
+  :Reject: invalid time range;
+  |Student|
+  :Receive rejection;
+  stop
+endif
+@enduml
