@@ -186,9 +186,6 @@ npm run build
 
 ### 6.3 Final run
 
-<!-- The REAL output of the full run on your final code. Every test passes, and the number of
-     tests equals what your test files hold (R2). -->
-
 ```text
  RUN  v3.2.7 C:/Users/nural/Desktop/se-practice/sis-04/app
 
