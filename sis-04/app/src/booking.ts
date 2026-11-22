@@ -1,4 +1,3 @@
-
 export type Interval = {
   start: number;
   end: number;
@@ -47,4 +46,30 @@ export function canBook({
 
   // AC5: Booking data is never modified.
   return true;
+}
+
+import type { Room } from './rooms';
+
+type CheckRoomRequest = {
+  start: number;
+  end: number;
+  now: number;
+};
+
+export function checkRoom(
+  rooms: readonly Room[],
+  roomId: string,
+  request: CheckRoomRequest
+): boolean {
+  const room = rooms.find((item) => item.id === roomId);
+
+  if (!room) {
+    return false;
+  }
+
+  return canBook({
+    ...request,
+    blocked: room.blocked,
+    bookings: room.bookings,
+  });
 }
