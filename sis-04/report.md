@@ -2,21 +2,15 @@
 
 ## 1. Setup and starting point
 
-<!-- Model: the exact model with its version, as the tool shows it ("ChatGPT" is a tool, not a
-     model). If the tool does not show it, write: not displayed
-     Starting point: week-08 | week-07 | sis-03 | starter   (README section 3)
-     Baseline commit: the commit that brings your starting point into sis-04/app/ UNCHANGED —
-     git rev-parse --short HEAD right after that commit. It is your "initial version". -->
-
 | Item | Value |
 | --- | --- |
 | Assistant (tool) | ChatGPT|
 | Assistant model | not displayed |
 | Starting point | starter |
-| Baseline commit | (write here) |
+| Baseline commit | 0e86f8a |
 | Language (ts or js) | ts |
-| Vitest version | (write here) |
-| Where I ran the tests | (write here) |
+| Vitest version | vitest/5.1.1 |
+| Where I ran the tests | Local machine, VS Code terminal, Windows (win32-x64), Node v24.14.1 |
 
 ### 1.1 Baseline run
 
@@ -34,46 +28,87 @@ No test files found, exiting with code 1
      they do. A tree is fine:  src/App.tsx — the page, holds the rooms and the form … -->
 
 ```text
-(paste here)
+index.html        — HTML entry, #root, loads /src/main.tsx  
+
+package.json      — scripts dev/build/test (vitest run); React 18, Vite 5, Vitest  
+
+tsconfig.json     — strict TypeScript, compiles src/ only  
+
+vite.config.ts    — Vite with the React plugin  
+
+src/main.tsx      — mounts <App /> in StrictMode, imports index.css  
+
+src/App.tsx       — the whole app: Room type, ROOMS (2 rooms), toMinutes/fmt helpers, form state, check() with all AC rules inline, rendering  
+
+src/index.css     — styles; at <=480px the form stacks in one column
 ```
 
 ### 2.2 The context message as sent
 
-<!-- The whole first message of your analysis chat: the map, AC1–AC6, F1–F5 and the constraints
-     (no login, payments, live APIs or database; fictional data only). Unedited. -->
-
 ```text
-(paste here)
+I am extending a small React + TypeScript + Vite app, "Smart Campus Room Availability Checker".
+
+Repository map:
+index.html        — HTML entry, #root, loads /src/main.tsx  
+
+package.json      — scripts dev/build/test (vitest run); React 18, Vite 5, Vitest  
+
+tsconfig.json     — strict TypeScript, compiles src/ only  
+
+vite.config.ts    — Vite with the React plugin  
+
+src/main.tsx      — mounts <App /> in StrictMode, imports index.css  
+
+src/App.tsx       — the whole app: Room type, ROOMS (2 rooms), toMinutes/fmt helpers, form state, check() with all AC rules inline, rendering  
+
+src/index.css     — styles; at <=480px the form stacks in one column
+
+Requirements to preserve (AC1–AC6):
+AC1 Reject start ≥ end and requests in the past.
+AC2 Enforce the maximum allowed duration (120 minutes).
+AC3 Reject a blocked room.
+AC4 Reject overlaps; allow bookings that only touch at endpoints.
+AC5 Return Available / Unavailable without changing booking data.
+AC6 Clear, responsive feedback on desktop and mobile.
+
+New requirements:
+Catalog of at least 4 fictional rooms, each with id, name, capacity, equipment list, blocked status, own bookings. Show only rooms that match the user's filters. The availability check must use the chosen room's bookings.
+F1 Capacity filter: room capacity >= requested attendees.
+F2 Equipment filter: the room must contain ALL selected items.
+F3 A blocked room cannot be reported as available.
+F4 Show a clear empty state when no rooms match.
+F5 Changing the selected room must refresh the availability result.
+
+Constraints: no login, payments, live APIs or database; fictional data only.
+Target modules: src/rooms.ts, src/filter.ts (filterRooms), src/booking.ts (canBook unchanged in behaviour, checkRoom(rooms, roomId, request)), App.tsx without room data or rules.
+
+Task now: list maintainability risks, each with file/function reference, and propose a plan of small steps. Give a plan, not a full rewrite, and no code yet.
 ```
 
 ## 3. Codebase analysis (Task 1)
 
 ### 3.1 Maintainability risks
 
-<!-- At least three, found in YOUR starting code. "Where" names a file or a function(),
-     e.g. src/App.tsx, check(). Evidence is what you saw, not what the assistant said.
-     Priority: High / Medium / Low. -->
-
 | # | Risk | Where (file / function) | Evidence | Priority |
 | --- | --- | --- | --- | --- |
-| 1 | (write here) | (write here) | (write here) | High / Medium / Low |
-| 2 | (write here) | (write here) | (write here) | High / Medium / Low |
-| 3 | (write here) | (write here) | (write here) | High / Medium / Low |
+| 1 | `blocked` is a page-level checkbox, not a property of the selected room, so a blocked room cannot be handled per room (AC3, F3) | `src/App.tsx`, `check()` and `useState(blocked)` | `check()` uses `else if (blocked) ok = false;` from the checkbox state; the `blocked` field of each entry in `ROOMS` is never read | High |
+| 2 | All availability rules (AC1–AC4) live inside the React component, so they cannot be tested without rendering the page | `src/App.tsx`, `check()` | The whole rule ladder (`let ok = true; … else if (e - s > 120) …`) sits in `check()` next to `setResult`; there is no `canBook` and no test file | High |
+| 3 | Changing the room does not clear the previous result, so an old "Available" stays on screen for another room (F5) | `src/App.tsx`, room `<select>` | `onChange={e => setRoomId(e.target.value)}` does not call `setResult(null)` | High |
+| 4 | Room data and model are inside the UI file and too small for the new feature | `src/App.tsx`, `type Room` and `ROOMS` | `Room` has no `capacity` or `equipment`; `ROOMS` has only 2 rooms and is declared in `App.tsx` | Medium |
 
 ### 3.2 Improvement plan — before editing
 
-<!-- Numbered, in the order you will do it, smallest safe step first. Written BEFORE you change
-     code: the commit that adds this section comes before the commit that changes app/src. -->
-
-1. (write here)
-2. (write here)
-3. (write here)
+1. Move the rule ladder from `check()` into `src/booking.ts` as `canBook({ start, end, now, blocked, bookings })` with unchanged behaviour. Write the AC1–AC5 and B1–B4 tests first and keep them green.
+2. Move `Room` and `ROOMS` into `src/rooms.ts`; add `capacity` and `equipment` and at least four fictional rooms, each with its own bookings and `blocked` value.
+3. Write the F1, F2, F4, B5 and B6 tests first, then add `filterRooms` in `src/filter.ts` (`every` for equipment).
+4. Write the F3, F5 and INT tests first, then add `checkRoom` in `src/booking.ts`, which finds the room by id and calls `canBook` with that room's own `blocked` and `bookings`; an unknown id is not available.
+5. Rewire `src/App.tsx`: remove the global "Room blocked" checkbox, add the attendees and equipment filters and the empty state, call `checkRoom`, reset the result when the room changes. Then remove the remaining duplicated validation, draw the diagrams and finish the report.
 
 ### 3.3 One AI suggestion I rejected or modified
 
 | Suggestion (as the assistant made it) | Decision | Why — with the AC, F-rule, test or file behind it |
 | --- | --- | --- |
-| (write here) | Rejected / Modified | (write here) |
+| Step 3 of the plan: `filterRooms()` should also implement "F3: blocked rooms must not be presented as available" and return only rooms matching all filters | Modified | F3 is about the availability result, not about filtering by capacity and equipment. So `filterRooms` in `src/filter.ts` will only do F1 and F2, and F3 will be handled by `checkRoom`/`canBook` (AC3). My F3 test will call `checkRoom` with a blocked room and expect `false`. |
 
 ## 4. Feature extension (Task 2)
 
