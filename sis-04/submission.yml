@@ -27,7 +27,7 @@ project:                        # exactly as in report.md section 1
   start_from:  starter                 # week-08 | week-07 | sis-03 | starter
   baseline_commit:     0e86f8a         # the commit that brought the starting point in unchanged
   language:     ts                # ts | js
-  vitest:  v5.1.1              # the version from the "RUN  v..." line, e.g. 3.2.4
+  vitest:  v3.2.7              # the version from the "RUN  v..." line, e.g. 3.2.4
 
 counts:                         # the checker prints most of these under --json "measured"
   rooms: 4                     # rooms in ROOMS (src/rooms)

@@ -9,7 +9,7 @@
 | Starting point | starter |
 | Baseline commit | 0e86f8a |
 | Language (ts or js) | ts |
-| Vitest version | vitest/5.1.1 |
+| Vitest version | v3.2.7 |
 | Where I ran the tests | Local machine, VS Code terminal, Windows (win32-x64), Node v24.14.1 |
 
 ### 1.1 Baseline run
