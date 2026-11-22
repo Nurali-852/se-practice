@@ -114,23 +114,17 @@ Task now: list maintainability risks, each with file/function reference, and pro
 
 ### 4.1 What I added
 
-<!-- Short: the catalog (how many rooms, which equipment), how the filter is chosen on the page,
-     what the empty state says, what happens to an old result when the room changes. -->
-
-(write here)
+The catalog has 4 fictional rooms (A-101, B-204, C-305, D-410) with capacities from 12 to 40 and equipment chosen from Computers, Microphone, Projector, Smart Board and Whiteboard; D-410 is blocked. The filter is chosen on the page with a number field for attendees and one checkbox per equipment item. The room list shows only rooms that match both filters, and a room is picked with a radio button. Blocked rooms stay in the list with a "(blocked)" label but are never reported as available. When no room matches, the page shows "No rooms match your selected capacity and equipment filters. Try changing your filters." When the room, the filters or the times change, the old result and error are cleared, and the next check uses only the bookings of the selected room.
 
 ### 4.2 Demonstration
 
-<!-- One row per screenshot in evidence/. Say what is on it: the filter values, the rooms shown,
-     the room selected, the times entered and the result. -->
-
 | Screenshot | What it shows |
 | --- | --- |
-| `evidence/filter-match.png` | (write here) |
-| `evidence/filter-empty.png` | (write here) |
-| `evidence/switch-a.png` | (write here) |
-| `evidence/switch-b.png` | (write here) |
-| `evidence/narrow.png` | (write here) |
+| `evidence/filter-match.png` | Attendees 15 with Projector and Whiteboard selected: only Room A-101 and Room B-204 are listed. |
+| `evidence/filter-empty.png` | Attendees 50: no room matches and the empty-state message is shown. |
+| `evidence/switch-a.png` | Room A-101 selected, current time 09:00, start 10:30, end 11:30: result Unavailable (it is booked 10:00–11:00). |
+| `evidence/switch-b.png` | The same times with Room B-204 selected: result Available (no bookings). |
+| `evidence/narrow.png` | The page at phone width in portrait: the form is one column and the room list and result stay readable. |
 
 ## 5. Refactoring (Task 3)
 
