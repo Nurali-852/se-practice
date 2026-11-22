@@ -1,0 +1,8 @@
+@startuml Before
+title Before: starter
+component "main.tsx" as Main
+component "App.tsx\n(Room type, ROOMS, check() with AC rules,\nform state, rendering)" as App
+component "index.css" as Css
+Main --> App : imports
+Main --> Css : imports
+@enduml

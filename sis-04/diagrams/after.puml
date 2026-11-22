@@ -1,0 +1,17 @@
+@startuml After
+title After: separated modules
+component "main.tsx" as Main
+component "App.tsx\n(UI, form state, feedback)" as App
+component "rooms.ts\n(Room type, ROOMS, EQUIPMENT)" as rooms
+component "filter.ts\n(filterRooms: F1, F2)" as filter
+component "booking.ts\n(canBook AC1-AC5, checkRoom F3, F5)" as booking
+component "index.css" as Css
+Main --> App : imports
+Main --> Css : imports
+App --> rooms : ROOMS, EQUIPMENT
+App --> filter : filterRooms
+App --> booking : checkRoom
+filter ..> rooms : type Room
+booking ..> rooms : type Room
+rooms ..> booking : type Interval
+@enduml
