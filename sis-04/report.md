@@ -128,68 +128,60 @@ The catalog has 4 fictional rooms (A-101, B-204, C-305, D-410) with capacities f
 
 ## 5. Refactoring (Task 3)
 
-<!-- The diagrams are diagrams/before.puml and diagrams/after.puml (README section 8). -->
-
 ### 5.1 Module responsibilities after
 
 | Module or component | Responsibility |
 | --- | --- |
-| `src/rooms.ts` | (write here) |
-| `src/booking.ts` | (write here) |
-| `src/filter.ts` | (write here) |
-| (write here) | (write here) |
+| `src/rooms.ts` | The `Room` type, the catalog `ROOMS` (4 fictional rooms) and the derived list `EQUIPMENT`; data only. |
+| `src/booking.ts` | The availability rules: `canBook` (AC1–AC5) and `checkRoom`, which finds the chosen room and calls `canBook` with that room's own `blocked` and `bookings` (F3, F5). |
+| `src/filter.ts` | `filterRooms`: capacity ≥ attendees (F1) and ALL selected equipment (F2). No availability rule. |
+| `src/App.tsx` | The page: form state, filters, room list, empty state, feedback; imports the rules and holds no room data or rule of its own. |
 
 ### 5.2 Design decisions
 
-<!-- At least two. The alternative is what you could have done instead (often what the assistant
-     proposed). The why names an AC, an F-rule, a test or a risk from 3.1. -->
-
 | Decision | Alternative I did not take | Why |
 | --- | --- | --- |
-| (write here) | (write here) | (write here) |
-| (write here) | (write here) | (write here) |
+| Blocked rooms stay in the filtered list with a "(blocked)" label; `filterRooms` does not look at `blocked` | Hide blocked rooms inside `filterRooms` | F3 is about the availability result, so it belongs to `checkRoom`/`canBook` (AC3). The user sees why a room cannot be booked, and my F3 test checks `checkRoom` on a blocked room. |
+| `checkRoom(rooms, roomId, request)` takes the whole catalog and calls `canBook` | `App.tsx` reads the room and passes its `blocked` and `bookings` to `canBook` itself | The page then has no rule of its own, and the F5 test can prove that the chosen room's data decides the result (two rooms, same times, different results). |
 
 ### 5.3 Duplication removed
 
-<!-- One row per duplicated location that is gone. Count what you can point at, nothing else. -->
-
 | Before (file / function, what was repeated) | After (where it lives now) |
 | --- | --- |
-| (write here) | (write here) |
+| `src/App.tsx`, `check()`: the start-before-end condition was validated twice (`if (!(s < e)) setError(...)` and inside the `0 <= s && s < e && e <= 1440` rule) | The rule is only in `canBook` in `src/booking.ts`; `App.tsx` has one early return for the message |
+| `src/App.tsx`: the blocked status existed in two places, the "Room blocked" checkbox and `blocked` in each `ROOMS` entry (the entry's value was never read) | One source: `room.blocked` in `src/rooms.ts`, read by `checkRoom` |
 
 ## 6. Automated tests (Task 4)
 
 ### 6.1 Test plan
 
-<!-- One row per required ID. A test may carry several IDs in its title,
-     e.g. test('T06 B1 AC2: exactly 120 minutes is available', …) covers B1 and AC2. -->
-
 | ID | Test title (as in the file) | Input → expected |
 | --- | --- | --- |
-| AC1 | (write here) | (write here) |
-| AC2 | (write here) | (write here) |
-| AC3 | (write here) | (write here) |
-| AC4 | (write here) | (write here) |
-| AC5 | (write here) | (write here) |
-| F1 | (write here) | (write here) |
-| F2 | (write here) | (write here) |
-| F3 | (write here) | (write here) |
-| F4 | (write here) | (write here) |
-| F5 | (write here) | (write here) |
-| B1 | (write here) | (write here) |
-| B2 | (write here) | (write here) |
-| B3 | (write here) | (write here) |
-| B4 | (write here) | (write here) |
-| B5 | (write here) | (write here) |
-| B6 | (write here) | (write here) |
-| INT | (write here) | (write here) |
+| AC1 | `T01 AC1: rejects a start time equal to the end time` (booking.test.ts; also T02 and T03) | start 600, end 600, now 500 -- `false` |
+| AC2 | `T04 AC2: rejects a duration exceeding 120 minutes` (booking.test.ts) | start 600, end 721 -- `false` |
+| AC3 | `T05 AC3: rejects a blocked room` (booking.test.ts) | blocked room, 600–660 -- `false` |
+| AC4 | `T06 AC4: rejects overlapping bookings` and `T07 AC4: allows bookings that touch at endpoints` (booking.test.ts) | 620–680 against 600–660 -- `false`; 660–720 against 600–660 -- `true` |
+| AC5 | `T08 AC5: does not mutate existing bookings` (booking.test.ts) | bookings array after `canBook` equals its copy from before |
+| F1 | `T01 F1: includes rooms with sufficient capacity` (filter.test.ts) | 20 attendees -- rooms r1 and r2 |
+| F2 | `T02 F2: requires all selected equipment items` (filter.test.ts) | Projector + Whiteboard -- only r1 |
+| F3 | `T01 F3: never reports a blocked room as available` (checkroom.test.ts) | blocked room r1, 610–650 -- `false` |
+| F4 | `T03 F4: returns an empty array when nothing matches` (filter.test.ts) | 100 attendees -- `[]` |
+| F5 | `T02 F5: checks the selected room own bookings` (checkroom.test.ts) | same times: r2 (booked 600–660) -- `false`, r3 (no bookings) -- `true` |
+| B1 | `T09 B1 AC2: allows exactly 120 minutes` (booking.test.ts) | 600–720 -- `true` |
+| B2 | `T10 B2 AC2: rejects 121 minutes` (booking.test.ts) | 600–721 -- `false` |
+| B3 | `T11 B3 AC4: allows a booking starting at an existing endpoint` (booking.test.ts) | 660–720 against 600–660 -- `true` |
+| B4 | `T12 B4 AC4: rejects a booking that overlaps an existing interval` (booking.test.ts) | 650–710 against 600–660 -- `false` |
+| B5 | `T04 B5 F1: includes a room when capacity equals attendees` (filter.test.ts) | 30 attendees, room with capacity 30 -- included |
+| B6 | `T05 B6 F1: excludes a room when capacity is one below attendees` (filter.test.ts) | 21 attendees, room with capacity 20 -- excluded |
+| INT | `T05 INT: filters rooms before checking the returned room` (checkroom.test.ts) | `filterRooms` (25 attendees, Whiteboard) -- r3, then `checkRoom` on r3 -- `true` |
 
 ### 6.2 Commands
 
-<!-- The commands exactly as you typed them, from app/. -->
-
 ```text
-(paste here)
+cd sis-04/app
+npm install
+npx vitest run
+npm run build
 ```
 
 ### 6.3 Final run
@@ -198,7 +190,16 @@ The catalog has 4 fictional rooms (A-101, B-204, C-305, D-410) with capacities f
      tests equals what your test files hold (R2). -->
 
 ```text
-(paste here)
+ RUN  v3.2.7 C:/Users/nural/Desktop/se-practice/sis-04/app
+
+ ✓ src/filter.test.ts (5 tests) 3ms
+ ✓ src/booking.test.ts (12 tests) 3ms
+ ✓ src/checkroom.test.ts (5 tests) 3ms
+
+ Test Files  3 passed (3)
+      Tests  22 passed (22)
+   Start at  20:56:53
+   Duration  456ms (transform 85ms, setup 0ms, collect 145ms, tests 9ms, environment 0ms, prepare 363ms)
 ```
 
 ## 7. Quality evaluation (Task 5)
