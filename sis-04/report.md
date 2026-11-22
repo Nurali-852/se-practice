@@ -1,9 +1,5 @@
 # SIS #04 — Report: Evolving the Smart Campus Room Availability Checker
 
-<!-- The ONLY file you write prose in. Keep every numbered heading (## 1. … ## 10.), every
-     ### sub-heading and every **Label:** word — the checker finds your answers by them.
-     Replace every "(write here)" and "(paste here)". Delete these <!-- --> comments if you like. -->
-
 ## 1. Setup and starting point
 
 <!-- Model: the exact model with its version, as the tool shows it ("ChatGPT" is a tool, not a
@@ -14,22 +10,20 @@
 
 | Item | Value |
 | --- | --- |
-| Assistant (tool) | (write here) |
-| Assistant model | (write here) |
-| Starting point | (write here) |
+| Assistant (tool) | ChatGPT|
+| Assistant model | not displayed |
+| Starting point | starter |
 | Baseline commit | (write here) |
-| Language (ts or js) | (write here) |
+| Language (ts or js) | ts |
 | Vitest version | (write here) |
 | Where I ran the tests | (write here) |
 
 ### 1.1 Baseline run
 
-<!-- Before you change anything: run the tests of your starting point inside app/ and paste the
-     REAL output. No tests yet (starter, sis-03)? Paste the run anyway: Vitest prints
-     "No test files found". That is your honest "original" number, 0/0. -->
-
 ```text
-(paste here)
+RUN  v3.2.7 C:/Users/nural/Desktop/se-practice/sis-04/app
+
+No test files found, exiting with code 1
 ```
 
 ## 2. Context for the assistant
