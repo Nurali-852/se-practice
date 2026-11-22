@@ -6,30 +6,26 @@ including anything an AI tool produced.
 
 | Tool | Exact model / plan | Date | Used for | Which files it touched |
 | --- | --- | --- | --- | --- |
-| | | | codebase analysis (Task 1) | |
-| | | | improvement plan | |
-| | | | feature extension (Task 2) | |
-| | | | refactoring (Task 3) | |
-| | | | tests (Task 4) | |
+|ChatGPT |not displayed, free plan |22.11.2026 | codebase analysis (Task 1) |none (analysis only) |
+|ChatGPT |not displayed, free plan |22.11.2026 | improvement plan | none |
+|ChatGPT |not displayed, free plan |22.11.2026 | feature extension (Task 2) |`app/src/booking.ts`, `rooms.ts`, `filter.ts`, `App.tsx`, `index.css` |
+|ChatGPT |not displayed, free plan |22.11.2026 | refactoring (Task 3) |`App.tsx`, `index.css` |
+|ChatGPT |not displayed, free plan |22.11.2026 | tests (Task 4) |`app/src/booking.test.ts`, `filter.test.ts`, `checkroom.test.ts` |
 
-<!-- Delete rows you did not use the assistant for; add rows for anything else. The optional
-     extension (an existing skill or a read-only MCP server) goes here too, with its permissions. -->
+**The assistant wrote, or helped write, tests in `app/`:** yes
 
-**The assistant wrote, or helped write, tests in `app/`:** yes / no
-<!-- Either answer is allowed. If "yes": which tests, and how you checked that their EXPECTED values
-     come from AC1–AC5 and F1–F5, not from what the code happens to return. -->
+ChatGPT generated the three test files. I checked that the expected values come from the requirements and not from the code: 120 minutes is available and 121 is rejected (AC2, B1, B2), touching an existing booking is available and overlapping is rejected (AC4, B3, B4), capacity equal to the attendees is included and one below is excluded (F1, B5, B6), a blocked room is never available (F3), and the same times give different results for two rooms (F5).
 
-**Every run pasted in report.md was produced by my code on my machine (or Codespace), unedited:** yes / no
+**Every run pasted in report.md was produced by my code on my machine (or Codespace), unedited:** yes
 
-**Every number in report.md section 7 was measured the way its row says:** yes / no
+**Every number in report.md section 7 was measured the way its row says:** yes
 
-**I shared no credentials, keys or private data with any tool:** yes / no
+**I shared no credentials, keys or private data with any tool:** yes
 
-**Everything I submitted, I can explain and defend in class — including filterRooms, checkRoom and
-why each module exists:** yes / no
+**Everything I submitted, I can explain and defend in class — including filterRooms, checkRoom and why each module exists:** yes
 
 **Anything I accepted from the AI without fully understanding it:**
-<!-- Name the file and the line. An honest entry here costs far less than a blank one that turns out to be untrue. -->
+Nothing
 
-Signed: <your name>
-Date:
+Signed: Nurali
+Date: 22.11.2026

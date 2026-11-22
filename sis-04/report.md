@@ -201,89 +201,148 @@ npm run build
 
 ## 7. Quality evaluation (Task 5)
 
-<!-- Original = your baseline commit. Final = what you submit. "How I obtained it" says how you
-     measured, so someone else could repeat it: "1.1 and 6.3 runs", "counted in 5.3",
-     "git ls-files app/src". Do not invent a metric. Tests: write passed/total, e.g. 19/19. -->
-
 | Measure | Original | Final | How I obtained it |
 | --- | --- | --- | --- |
-| Automated tests passed / total | (write here) | (write here) | (write here) |
-| Duplicated logic locations removed | (write here) | (write here) | (write here) |
-| Code structure: modules and their responsibilities | (write here) | (write here) | (write here) |
-| Remaining limitation | (write here) | (write here) | (write here) |
+| Automated tests passed / total | 0/0 | 22/22 | `Tests` line of the runs in 1.1 and 6.3 |
+| Duplicated logic locations removed | 0 | 2 | counted in 5.3 (git diff of `src/App.tsx`) |
+| Code structure: modules and their responsibilities | 1 file with logic: `App.tsx` holds the Room type, ROOMS, all availability rules and the UI | 4 parts: `rooms.ts` (data), `booking.ts` (AC1–AC5 rules, `checkRoom`), `filter.ts` (F1, F2), `App.tsx` (UI only) | `git ls-files app/src` before and after, read against 5.1 |
+| Remaining limitation | The rules could not be tested at all: they lived inside `check()` in the component | F4 and F5 on the page are confirmed only by screenshots and manual use; all 22 tests call the modules and none renders the page | the three test files import only `./booking`, `./filter` and `./rooms`; no rendering library is in `package.json` |
 
 ## 8. AI evidence appendix
 
-<!-- At least three exchanges, one ### 8.N block each: the analysis (Task 1), the plan, and at
-     least one implementation, refactoring or test exchange. Copy the block for more.
-     The prompt as you sent it; the output may be cut to the part you used, with "[…]" where
-     you cut. Verified by: the test, run, file or check that confirmed it — not "it looked right". -->
-
 ### 8.1 Exchange 1
 
-**Tool and model:** (write here)
-**Date:** (write here)
-**Purpose:** (write here)
+**Tool and model:** ChatGPT, not displayed  
+**Date:** 22.11.2026  
+**Purpose:** Codebase analysis (Task 1): maintainability risks of the starter and a plan of small steps, no code.
 
 **Prompt:**
 
 ```text
-(paste here)
+I am extending a small React + TypeScript + Vite app, "Smart Campus Room Availability Checker".
+
+Repository map:
+index.html        — HTML entry, #root, loads /src/main.tsx  
+
+package.json      — scripts dev/build/test (vitest run); React 18, Vite 5, Vitest  
+
+tsconfig.json     — strict TypeScript, compiles src/ only  
+
+vite.config.ts    — Vite with the React plugin  
+
+src/main.tsx      — mounts <App /> in StrictMode, imports index.css  
+
+src/App.tsx       — the whole app: Room type, ROOMS (2 rooms), toMinutes/fmt helpers, form state, check() with all AC rules inline, rendering  
+
+src/index.css     — styles; at <=480px the form stacks in one column
+
+Requirements to preserve (AC1–AC6):
+AC1 Reject start ≥ end and requests in the past.
+AC2 Enforce the maximum allowed duration (120 minutes).
+AC3 Reject a blocked room.
+AC4 Reject overlaps; allow bookings that only touch at endpoints.
+AC5 Return Available / Unavailable without changing booking data.
+AC6 Clear, responsive feedback on desktop and mobile.
+
+New requirements:
+Catalog of at least 4 fictional rooms, each with id, name, capacity, equipment list, blocked status, own bookings. Show only rooms that match the user's filters. The availability check must use the chosen room's bookings.
+F1 Capacity filter: room capacity >= requested attendees.
+F2 Equipment filter: the room must contain ALL selected items.
+F3 A blocked room cannot be reported as available.
+F4 Show a clear empty state when no rooms match.
+F5 Changing the selected room must refresh the availability result.
+
+Constraints: no login, payments, live APIs or database; fictional data only.
+Target modules: src/rooms.ts, src/filter.ts (filterRooms), src/booking.ts (canBook unchanged in behaviour, checkRoom(rooms, roomId, request)), App.tsx without room data or rules.
+
+Task now: list maintainability risks, each with file/function reference, and propose a plan of small steps. Give a plan, not a full rewrite, and no code yet.
 ```
 
 **Output used:**
 
 ```text
-(paste here)
+Validation flow: In `check()`, the invalid start/end condition sets an error but does not immediately return. The function continues and can still display an availability result. […]
+Stale availability result: Changing the selected room does not automatically refresh the previous result. This conflicts with F5. […]
+| 4 | `src/App.tsx` — `check()` | The `blocked` state is separate from the selected room's actual blocked status. | The application can potentially report availability based on a manually controlled checkbox rather than room data. |
+[…]
+Step 3 — Implement room filtering. File: `src/filter.ts`. Create `filterRooms()`. Implement F1 […] Implement F2 […] Implement F3: blocked rooms must not be presented as available.
 ```
 
-**Problems found:** (write here)
-**Changes made:** (write here)
-**Verified by:** (write here)
+**Problems found:** The assistant put F3 (blocked rooms) into `filterRooms`, but F3 is about the availability result, so it belongs to `checkRoom`/`canBook` (AC3). It also described the `blocked` problem only as "potentially"; in `App.tsx` I confirmed it is certain, because `check()` reads the checkbox state and the `blocked` field of `ROOMS` is never used. Its list also contained weak items (for example `main.tsx`, which it itself called acceptable).  
+**Changes made:** Wrote 3.1 from four risks that I located myself in `App.tsx`; modified the F3 step (recorded in 3.3) so that `filterRooms` does only F1 and F2.  
+**Verified by:** Reading `src/App.tsx`: `else if (blocked) ok = false;`, `useState(false)` for `blocked`, no `return` after `setError(...)`, no `setResult(null)` in the room `onChange`. These were later confirmed by the `git diff` of `App.tsx` against the baseline commit.
 
 ### 8.2 Exchange 2
 
-**Tool and model:** (write here)
-**Date:** (write here)
-**Purpose:** (write here)
+**Tool and model:** ChatGPT, not displayed  
+**Date:** 22.11.2026  
+**Purpose:** Implementation of the plan in four steps (booking rules, catalog and filter, `checkRoom`, `App.tsx`), tests first.
 
 **Prompt:**
 
 ```text
-(paste here)
+Implement your plan in order, in ONE answer but as separate numbered steps. For every step give only the files for that step, tests first. I will apply, run and commit each step separately, so do not merge steps and do not rewrite files outside the step.
+
+Step 1: src/booking.test.ts, then src/booking.ts with canBook({ start, end, now, blocked, bookings }): boolean. Move the rule ladder from check() in App.tsx WITHOUT changing behaviour (AC1 start < end and not in the past, AC2 max 120 minutes, AC3 blocked, AC4 overlap rejected but touching allowed, AC5 no mutation of bookings). Tests: AC1, AC2, AC3, AC4, AC5, B1 (exactly 120 -> true), B2 (121 -> false), B3 (touching -> true), B4 (overlapping -> false).
+
+Step 2: src/rooms.ts with type Room = { id, name, capacity, equipment: string[], blocked, bookings: {start, end}[] }, const ROOMS with 4 fictional rooms (every field filled, one blocked), and EQUIPMENT built from ROOMS. Then src/filter.test.ts (a fixed catalog inside the file, do not import ROOMS) and src/filter.ts with filterRooms(rooms, { attendees, equipment }): F1 capacity >= attendees, F2 the room must have ALL selected equipment (every, not some), F4 empty result when nothing matches. Tests: F1, F2, F4, B5 (capacity equal to attendees is included), B6 (one below is excluded). Do NOT put the blocked rule in filterRooms.
+
+Step 3: src/checkroom.test.ts (fixed catalog inside the file), then checkRoom(rooms, roomId, { start, end, now }): boolean added to src/booking.ts. It finds the room by id and calls canBook with THAT room's own blocked and bookings; unknown id returns false; no mutation. Tests: F3 (blocked room never available), F5 (same times, two rooms, different results), unknown id, INT (filterRooms then checkRoom on what it returned).
+
+Step 4: rewrite src/App.tsx so it holds no room data and no rules, only imports from ./rooms, ./filter and ./booking. Remove the global "Room blocked" checkbox. Add an attendees input and one checkbox per equipment item, show only rooms from filterRooms (radio selection, blocked rooms stay listed with a "(blocked)" label), a clear empty-state message (F4), clear the old result and error when the room or filters change (F5), return after a start >= end error so no result is shown with it, and show the selected room's bookings. Also give small CSS additions for src/index.css and keep the 480px breakpoint.
+
+Rules for all tests: Vitest, real modules, no mocks, no .skip/.only/.todo/test.each, one test per case, each title starts with its IDs as words (for example 'T04 B1 AC2: exactly 120 minutes is available'), expected values come from the requirements, not from the code.
 ```
 
 **Output used:**
 
 ```text
-(paste here)
+export function checkRoom(
+  rooms: readonly Room[],
+  roomId: string,
+  request: CheckRoomRequest
+): boolean {
+  const room = rooms.find((item) => item.id === roomId);
+  if (!room) { return false; }
+  return canBook({ ...request, blocked: room.blocked, bookings: room.bookings });
+}
+[…]
+Important: There is deliberately no `blocked` condition in `filterRooms()`. Blocked rooms remain visible if they satisfy the user's filters. Their availability is handled separately in Step 3.
 ```
 
-**Problems found:** (write here)
-**Changes made:** (write here)
-**Verified by:** (write here)
+**Problems found:** In `rooms.ts` it imports `Interval` from `booking.ts` while `booking.ts` imports `Room` from `rooms.ts`, a circular type import.  
+**Changes made:** kept as generated  
+**Verified by:** `npx vitest run` in `app/`: 3 files, 22 tests passed (22);
 
 ### 8.3 Exchange 3
 
-**Tool and model:** (write here)
-**Date:** (write here)
-**Purpose:** (write here)
+**Tool and model:** ChatGPT, not displayed  
+**Date:** 22.11.2026  
+**Purpose:** Review of the final `booking.ts`, `filter.ts` and `rooms.ts` against AC1–AC5 and F1–F5.
 
 **Prompt:**
 
 ```text
-(paste here)
+Review my final src/booking.ts, src/filter.ts and checkRoom against AC1–AC5 and F1–F5. List only concrete defects with the line, no rewrite.
 ```
 
 **Output used:**
 
 ```text
-(paste here)
+1. `src/booking.ts:26`**&#x20;— AC1:** `start > now` rejects a booking starting at exactly the current time. AC1 requires rejecting requests in the past, so a start equal to `now` should not be rejected for this reason.
+
+No other concrete defects found in the supplied files:
+
+- AC2–AC5: satisfied.
+- F1–F2: satisfied by `filterRooms()`.
+- F3: satisfied by `checkRoom()`.
+- F4: satisfied; no matches produce an empty array.
+- F5: cannot be verified from these files alone; it depends on how `App.tsx` handles room selection and availability-result state.
 ```
 
-**Problems found:** (write here)
-**Changes made:** (write here)
-**Verified by:** (write here)
+**Problems found:** The one defect it reported is a debatable reading of AC1, not a bug: the strict `start > now` rule comes from the starter (`!(s > n)` in the original `check()`), and the task says `canBook` must keep its behaviour, so changing it to `>=` would alter AC1 as it was before my refactoring. It could not judge F5 from the three files, which agrees with my own limitation in section 7 (F5 on the page is shown only by screenshots).  
+**Changes made:** None. I rejected the suggestion and kept `start > now`.  
+**Verified by:** Reading the baseline `check()` in `App.tsx` (`else if (!(s > n)) ok = false;`) and my test `T03 AC1: rejects a request starting in the past` (start 500, now 500 expects `false`), which would fail after the suggested change; `npx vitest run`: 22 passed (22).
 
 ## 9. Checker results and known fails
 
@@ -292,13 +351,16 @@ npm run build
 
 | Check | Why it still fails |
 | --- | --- |
-| (write here) | (write here) |
+| pass=33 | none |
 
 ## 10. AI reflection (Task 6)
 
-<!-- 200–300 words, your own words, no assistant. Answer all five:
-     What context did you provide the AI assistant? Which generated suggestions were useful or
-     incorrect? What did you personally verify? How did tests influence your engineering
-     decisions? What would you improve next? -->
+During this work, I gave the AI the project structure, acceptance criteria AC1–AC6, functional requirements F1–F5, and the main limitations: no login, external APIs, or database. I first asked for a plan without code so I could divide the work into smaller steps and implement them gradually.
 
-(write here)
+The AI was useful for separating the application logic into different modules, such as booking validation, room filtering, and room data. However, its suggestions still needed to be checked. For example, I noticed that `start > now` rejects bookings starting exactly at the current time, even though AC1 only requires rejecting past times. This showed me that small details can affect the application's behaviour.
+
+I personally checked whether each function followed its intended responsibility. Filtering should consider room capacity and all selected equipment, while availability checking should consider blocked rooms and their own bookings. I also paid attention to whether changing rooms could affect the availability result.
+
+Tests helped me verify important boundary cases, especially bookings lasting 120 versus 121 minutes, overlapping versus touching time intervals, and room capacity being equal to or one place below the number of attendees. These checks helped protect the original requirements while moving the logic into separate files.
+
+In the future, I would add UI tests to check room selection, filter changes, and empty states. Overall, AI helped me organize the code and find possible issues, but I still had to review its suggestions and make sure they matched the requirements.

@@ -1,4 +1,3 @@
-
 import type { Interval } from './booking';
 
 export type Room = {
